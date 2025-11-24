@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, SafeAreaView, StatusBar, Text } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { StyleSheet, View, SafeAreaView, StatusBar, Text, PanResponder, Platform } from 'react-native';
 import * as Speech from 'expo-speech';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
@@ -7,12 +7,30 @@ import { DancingScript_700Bold } from '@expo-google-fonts/dancing-script';
 
 import LetterDisplay from './components/LetterDisplay';
 import SoundBoard from './components/SoundBoard';
+import SettingsModal from './components/SettingsModal';
+
+import { Audio } from 'expo-av';
+import soundAssets from './data/soundAssets';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [selectedLetter, setSelectedLetter] = useState(null);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [settings, setSettings] = useState({
+    showStandard: true,
+    showCursive: true,
+    showUppercase: true,
+    showLowercase: true,
+    playPhonics: true,
+    playLetterName: false,
+    playWord: false,
+  });
+
+  const touchStartTime = useRef(null);
+  const touchCount = useRef(0);
+  const [sound, setSound] = useState();
 
   let [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -20,23 +38,129 @@ export default function App() {
     DancingScript_700Bold,
   });
 
+  // PanResponder for 4-finger hold gesture
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        const touches = evt.nativeEvent.touches.length;
+        if (touches === 4) {
+          touchCount.current = touches;
+          touchStartTime.current = Date.now();
+
+          // Check after 3 seconds if still holding
+          setTimeout(() => {
+            if (touchCount.current === 4 && touchStartTime.current) {
+              const elapsed = Date.now() - touchStartTime.current;
+              if (elapsed >= 3000) {
+                setSettingsVisible(true);
+                touchStartTime.current = null;
+                touchCount.current = 0;
+              }
+            }
+          }, 3000);
+        }
+      },
+      onPanResponderRelease: () => {
+        touchStartTime.current = null;
+        touchCount.current = 0;
+      },
+    })
+  ).current;
+
+  // Keyboard listener for Shift+S (web only)
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const handleKeyPress = (event) => {
+        if (event.shiftKey && event.key === 'S') {
+          setSettingsVisible(true);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, []);
+
+  useEffect(() => {
+    return sound
+      ? () => {
+        console.log('Unloading Sound');
+        sound.unloadAsync();
+      }
+      : undefined;
+  }, [sound]);
+
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
-  const handleLetterPress = (item) => {
-    setSelectedLetter(item.char);
-    // Speak the phonics sound (or letter name + word as fallback)
-    // Adjust rate and pitch for a more "phonics" like sound if possible, 
-    // but TTS is limited. We'll say the letter and the word.
-    // e.g. "A, Apple"
-    Speech.speak(`${item.speech}, ${item.phonics}`, {
-      language: 'en-US',
-      pitch: 1.0,
-      rate: 0.8,
+  const playPhonicsSound = async (char) => {
+    const soundFile = soundAssets[char];
+    if (soundFile) {
+      return new Promise(async (resolve) => {
+        try {
+          const { sound } = await Audio.Sound.createAsync(soundFile);
+          setSound(sound);
+
+          sound.setOnPlaybackStatusUpdate((status) => {
+            if (status.didJustFinish) {
+              sound.unloadAsync();
+              resolve();
+            }
+          });
+
+          await sound.playAsync();
+        } catch (error) {
+          console.error("Error playing sound", error);
+          resolve(); // Resolve anyway to continue sequence
+        }
+      });
+    }
+    return Promise.resolve();
+  };
+
+  const speakText = (text) => {
+    return new Promise((resolve) => {
+      Speech.speak(text, {
+        language: 'en-US',
+        pitch: 1.0,
+        rate: 0.8,
+        onDone: resolve,
+        onStopped: resolve,
+        onError: resolve,
+      });
     });
+  };
+
+  const handleLetterPress = async (item) => {
+    setSelectedLetter(item.char);
+
+    // Sequence: Letter Name -> Phonics Sound -> Word
+
+    if (settings.playLetterName) {
+      // Speak just the letter. Some TTS engines say "Capital A" for "A".
+      // We can try speaking the lowercase version or appending a period.
+      // Let's try speaking the character itself, but if it's uppercase, 
+      // some engines force "Capital".
+      // A workaround is to speak "The letter " + char, but user wants just the name.
+      // Let's try speaking it as a lowercase letter for the name, often sounds like the name.
+      await speakText(item.char.toLowerCase());
+    }
+
+    if (settings.playPhonics) {
+      await playPhonicsSound(item.char);
+    }
+
+    if (settings.playWord) {
+      await speakText(item.phonics);
+    }
+  };
+
+  const handleUpdateSettings = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
   };
 
   if (!fontsLoaded) {
@@ -47,11 +171,23 @@ export default function App() {
     <SafeAreaView style={styles.container} onLayout={onLayoutRootView}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.topSection}>
-        <LetterDisplay letter={selectedLetter} />
+        <LetterDisplay
+          letter={selectedLetter}
+          showStandard={settings.showStandard}
+          showCursive={settings.showCursive}
+          showUppercase={settings.showUppercase}
+          showLowercase={settings.showLowercase}
+        />
       </View>
-      <View style={styles.bottomSection}>
+      <View style={styles.bottomSection} {...panResponder.panHandlers}>
         <SoundBoard onLetterPress={handleLetterPress} />
       </View>
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        settings={settings}
+        onUpdateSettings={handleUpdateSettings}
+      />
     </SafeAreaView>
   );
 }

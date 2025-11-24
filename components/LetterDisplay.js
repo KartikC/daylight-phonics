@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function LetterDisplay({ letter }) {
+export default function LetterDisplay({ letter, showStandard = true, showCursive = true, showUppercase = true, showLowercase = true }) {
     if (!letter) {
         return (
             <View style={styles.container}>
@@ -13,18 +13,20 @@ export default function LetterDisplay({ letter }) {
     return (
         <View style={styles.container}>
             <View style={styles.row}>
-                <View style={styles.letterBox}>
-                    <Text style={styles.label}>Standard</Text>
-                    <Text style={styles.standardText}>
-                        {letter.toUpperCase()} {letter.toLowerCase()}
-                    </Text>
-                </View>
-                <View style={styles.letterBox}>
-                    <Text style={styles.label}>Cursive</Text>
-                    <Text style={styles.cursiveText}>
-                        {letter.toUpperCase()} {letter.toLowerCase()}
-                    </Text>
-                </View>
+                {showStandard && (
+                    <View style={styles.letterBox}>
+                        <Text style={styles.standardText}>
+                            {showUppercase ? letter.toUpperCase() : ''} {showLowercase ? letter.toLowerCase() : ''}
+                        </Text>
+                    </View>
+                )}
+                {showCursive && (
+                    <View style={styles.letterBox}>
+                        <Text style={styles.cursiveText}>
+                            {showUppercase ? letter.toUpperCase() : ''} {showLowercase ? letter.toLowerCase() : ''}
+                        </Text>
+                    </View>
+                )}
             </View>
         </View>
     );

@@ -38,33 +38,34 @@ export default function App() {
     DancingScript_700Bold,
   });
 
-  // PanResponder for 4-finger hold gesture
+  // PanResponder for 3-finger hold gesture (3 seconds)
+  const timerRef = useRef(null);
+
+  const handleTouchChange = (evt) => {
+    const touches = evt.nativeEvent.touches.length;
+    if (touches === 3) {
+      if (!timerRef.current) {
+        timerRef.current = setTimeout(() => {
+          setSettingsVisible(true);
+          timerRef.current = null;
+        }, 3000);
+      }
+    } else {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  };
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        const touches = evt.nativeEvent.touches.length;
-        if (touches === 4) {
-          touchCount.current = touches;
-          touchStartTime.current = Date.now();
-
-          // Check after 3 seconds if still holding
-          setTimeout(() => {
-            if (touchCount.current === 4 && touchStartTime.current) {
-              const elapsed = Date.now() - touchStartTime.current;
-              if (elapsed >= 3000) {
-                setSettingsVisible(true);
-                touchStartTime.current = null;
-                touchCount.current = 0;
-              }
-            }
-          }, 3000);
-        }
-      },
-      onPanResponderRelease: () => {
-        touchStartTime.current = null;
-        touchCount.current = 0;
-      },
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: handleTouchChange,
+      onPanResponderMove: handleTouchChange,
+      onPanResponderRelease: handleTouchChange,
+      onPanResponderTerminate: handleTouchChange,
     })
   ).current;
 

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Pressable, Text, StyleSheet, Animated } from 'react-native';
 
-export default function LetterButton({ letter, onPress }) {
+export default function LetterButton({ letter, onPress, size }) {
     const animatedValue = useRef(new Animated.Value(0)).current;
 
     const handlePressIn = () => {
@@ -51,14 +51,21 @@ export default function LetterButton({ letter, onPress }) {
         }),
     };
 
+    // Dynamic scale for text based on button size (assuming ~40% of size)
+    const dynamicFontSize = size ? size * 0.4 : 32;
+
     return (
         <Pressable
             onPress={onPress}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
         >
-            <Animated.View style={[styles.button, animatedStyle]}>
-                <Text style={styles.text}>{letter}</Text>
+            <Animated.View style={[
+                styles.button,
+                size ? { width: size, height: size } : {},
+                animatedStyle
+            ]}>
+                <Text style={[styles.text, { fontSize: dynamicFontSize }]}>{letter}</Text>
             </Animated.View>
         </Pressable>
     );

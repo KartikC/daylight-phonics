@@ -26,6 +26,7 @@ export default function App() {
     playPhonics: true,
     playLetterName: false,
     playWord: false,
+    enabledLetters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').reduce((acc, char) => ({ ...acc, [char]: true }), {}),
   });
 
   const touchStartTime = useRef(null);
@@ -38,17 +39,17 @@ export default function App() {
     DancingScript_700Bold,
   });
 
-  // PanResponder for 3-finger hold gesture (3 seconds)
+  // PanResponder for 3 or 4-finger hold gesture (2 seconds)
   const timerRef = useRef(null);
 
   const handleTouchChange = (evt) => {
     const touches = evt.nativeEvent.touches.length;
-    if (touches === 3) {
+    if (touches === 3 || touches === 4) {
       if (!timerRef.current) {
         timerRef.current = setTimeout(() => {
           setSettingsVisible(true);
           timerRef.current = null;
-        }, 3000);
+        }, 2000);
       }
     } else {
       if (timerRef.current) {
@@ -180,7 +181,10 @@ export default function App() {
         />
       </View>
       <View style={styles.bottomSection} {...panResponder.panHandlers}>
-        <SoundBoard onLetterPress={handleLetterPress} />
+        <SoundBoard
+          onLetterPress={handleLetterPress}
+          enabledLetters={settings.enabledLetters}
+        />
       </View>
       <SettingsModal
         visible={settingsVisible}

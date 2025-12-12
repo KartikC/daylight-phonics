@@ -1,7 +1,14 @@
 import React from 'react';
-import { Modal, View, Text, Switch, StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, Switch, StyleSheet, TouchableOpacity, ScrollView, Pressable } from 'react-native';
+import { ALPHABET_DATA } from '../data/alphabet';
 
 export default function SettingsModal({ visible, onClose, settings, onUpdateSettings }) {
+
+    const toggleLetter = (char) => {
+        const newEnabled = { ...settings.enabledLetters, [char]: !settings.enabledLetters?.[char] };
+        onUpdateSettings('enabledLetters', newEnabled);
+    };
+
     return (
         <Modal
             animationType="slide"
@@ -13,78 +20,101 @@ export default function SettingsModal({ visible, onClose, settings, onUpdateSett
                 <View style={styles.modalView}>
                     <Text style={styles.modalTitle}>Settings</Text>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Show Standard</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.showStandard ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('showStandard', !settings.showStandard)}
-                            value={settings.showStandard}
-                        />
-                    </View>
+                    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Show Standard</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.showStandard ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('showStandard', !settings.showStandard)}
+                                value={settings.showStandard}
+                            />
+                        </View>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Show Cursive</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.showCursive ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('showCursive', !settings.showCursive)}
-                            value={settings.showCursive}
-                        />
-                    </View>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Show Cursive</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.showCursive ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('showCursive', !settings.showCursive)}
+                                value={settings.showCursive}
+                            />
+                        </View>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Show Uppercase</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.showUppercase ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('showUppercase', !settings.showUppercase)}
-                            value={settings.showUppercase}
-                        />
-                    </View>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Show Uppercase</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.showUppercase ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('showUppercase', !settings.showUppercase)}
+                                value={settings.showUppercase}
+                            />
+                        </View>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Show Lowercase</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.showLowercase ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('showLowercase', !settings.showLowercase)}
-                            value={settings.showLowercase}
-                        />
-                    </View>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Show Lowercase</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.showLowercase ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('showLowercase', !settings.showLowercase)}
+                                value={settings.showLowercase}
+                            />
+                        </View>
 
-                    <View style={styles.divider} />
-                    <Text style={styles.sectionHeader}>Audio Settings</Text>
+                        <View style={styles.divider} />
+                        <Text style={styles.sectionHeader}>Audio Settings</Text>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Play Phonics Sound</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.playPhonics ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('playPhonics', !settings.playPhonics)}
-                            value={settings.playPhonics}
-                        />
-                    </View>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Play Phonics Sound</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.playPhonics ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('playPhonics', !settings.playPhonics)}
+                                value={settings.playPhonics}
+                            />
+                        </View>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Play Letter Name</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.playLetterName ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('playLetterName', !settings.playLetterName)}
-                            value={settings.playLetterName}
-                        />
-                    </View>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Play Letter Name</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.playLetterName ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('playLetterName', !settings.playLetterName)}
+                                value={settings.playLetterName}
+                            />
+                        </View>
 
-                    <View style={styles.settingRow}>
-                        <Text style={styles.settingLabel}>Play Word</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={settings.playWord ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={() => onUpdateSettings('playWord', !settings.playWord)}
-                            value={settings.playWord}
-                        />
-                    </View>
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Play Word</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.playWord ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('playWord', !settings.playWord)}
+                                value={settings.playWord}
+                            />
+                        </View>
+
+                        <View style={styles.divider} />
+                        <Text style={styles.sectionHeader}>Visible Letters</Text>
+                        <View style={styles.grid}>
+                            {ALPHABET_DATA.map(item => (
+                                <Pressable
+                                    key={item.char}
+                                    style={[
+                                        styles.letterButton,
+                                        settings.enabledLetters && settings.enabledLetters[item.char] ? styles.letterButtonActive : null
+                                    ]}
+                                    onPress={() => toggleLetter(item.char)}
+                                >
+                                    <Text style={[
+                                        styles.letterButtonText,
+                                        settings.enabledLetters && settings.enabledLetters[item.char] ? styles.letterButtonTextActive : null
+                                    ]}>{item.char}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+
+                    </ScrollView>
 
                     <TouchableOpacity
                         style={[styles.button, styles.buttonClose]}
@@ -109,7 +139,7 @@ const styles = StyleSheet.create({
         margin: 20,
         backgroundColor: "white",
         borderRadius: 20,
-        padding: 35,
+        padding: 20,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
@@ -119,7 +149,15 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        minWidth: 300,
+        width: '90%',
+        maxHeight: '80%',
+    },
+    scrollView: {
+        width: '100%',
+    },
+    scrollContent: {
+        alignItems: 'center',
+        paddingBottom: 20,
     },
     modalTitle: {
         marginBottom: 15,
@@ -164,5 +202,32 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 15,
         alignSelf: 'flex-start',
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
+    letterButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 5,
+        backgroundColor: '#f9f9f9',
+    },
+    letterButtonActive: {
+        backgroundColor: '#2196F3',
+        borderColor: '#2196F3',
+    },
+    letterButtonText: {
+        fontSize: 16,
+        color: '#000',
+    },
+    letterButtonTextActive: {
+        color: '#fff',
     },
 });

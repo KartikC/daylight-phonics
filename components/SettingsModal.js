@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 24,
         fontWeight: "bold",
+        userSelect: 'none',
     },
     settingRow: {
         flexDirection: 'row',
@@ -174,6 +175,7 @@ const styles = StyleSheet.create({
     },
     settingLabel: {
         fontSize: 18,
+        userSelect: 'none',
     },
     button: {
         borderRadius: 20,
@@ -190,6 +192,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         fontSize: 16,
+        userSelect: 'none',
     },
     divider: {
         height: 1,
@@ -202,6 +205,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 15,
         alignSelf: 'flex-start',
+        userSelect: 'none',
     },
     grid: {
         flexDirection: 'row',
@@ -226,6 +230,7 @@ const styles = StyleSheet.create({
     letterButtonText: {
         fontSize: 16,
         color: '#000',
+        userSelect: 'none',
     },
     letterButtonTextActive: {
         color: '#fff',

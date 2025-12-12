@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Speech from 'expo-speech';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
-import { DancingScript_700Bold } from '@expo-google-fonts/dancing-script';
+import { StyleScript_400Regular } from '@expo-google-fonts/style-script';
 
 import LetterDisplay from './components/LetterDisplay';
 import SoundBoard from './components/SoundBoard';
@@ -66,7 +66,7 @@ export default function App() {
   let [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
-    DancingScript_700Bold,
+    StyleScript_400Regular,
   });
 
   // PanResponder for 3 or 4-finger hold gesture (2 seconds)

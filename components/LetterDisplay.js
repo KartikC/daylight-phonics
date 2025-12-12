@@ -60,15 +60,18 @@ const styles = StyleSheet.create({
         fontSize: 80,
         fontFamily: 'Inter_700Bold',
         color: '#000',
+        userSelect: 'none',
     },
     cursiveText: {
         fontSize: 80,
-        fontFamily: 'DancingScript_700Bold',
+        fontFamily: 'StyleScript_400Regular',
         color: '#000',
+        userSelect: 'none',
     },
     placeholder: {
         fontSize: 24,
         color: '#ccc',
         fontFamily: 'Inter_400Regular',
+        userSelect: 'none',
     },
 });

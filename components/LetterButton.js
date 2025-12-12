@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Pressable, Text, StyleSheet, Animated } from 'react-native';
+import { Pressable, Text, StyleSheet, Animated, View } from 'react-native';
 
 export default function LetterButton({ letter, onPress, size }) {
     const animatedValue = useRef(new Animated.Value(0)).current;
@@ -8,7 +8,7 @@ export default function LetterButton({ letter, onPress, size }) {
         animatedValue.stopAnimation();
         Animated.timing(animatedValue, {
             toValue: 1,
-            duration: 60,
+            duration: 50,
             useNativeDriver: true,
         }).start();
     };
@@ -17,53 +17,50 @@ export default function LetterButton({ letter, onPress, size }) {
         animatedValue.stopAnimation();
         Animated.timing(animatedValue, {
             toValue: 0,
-            duration: 100,
+            duration: 80,
             useNativeDriver: true,
         }).start();
     };
 
-    const animatedStyle = {
-        transform: [
-            {
-                translateY: animatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 5], // Push down into the surface
-                }),
-            },
-        ],
-        shadowOffset: {
-            width: animatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [3, 0], // Shadow disappears as button sinks
-            }),
-            height: animatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [6, 1], // Shadow flattens when pressed
-            }),
-        },
-        shadowOpacity: animatedValue.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0.4, 0.15], // Shadow fades as button sinks
-        }),
-        elevation: animatedValue.interpolate({
-            inputRange: [0, 1],
-            outputRange: [8, 2], // Elevation drops when pressed
-        }),
-    };
+    // Button dimensions
+    const buttonSize = size || 80;
+    const edgeOffset = 6; // How much the front layer floats above the back
+    const pressedOffset = 2; // Keep small gap when pressed for 3D effect
 
-    // Dynamic scale for text based on button size (assuming ~40% of size)
-    const dynamicFontSize = size ? size * 0.4 : 32;
+    // Animated translateY for the front layer
+    const frontTranslateY = animatedValue.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-edgeOffset, -pressedOffset],
+    });
+
+    const dynamicFontSize = buttonSize * 0.4;
 
     return (
         <Pressable
             onPress={onPress}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
+            style={styles.wrapper}
         >
+            {/* Background layer (stationary "edge" of button) */}
+            <View style={[
+                styles.edge,
+                {
+                    width: buttonSize,
+                    height: buttonSize,
+                    borderRadius: buttonSize * 0.15,
+                }
+            ]} />
+
+            {/* Foreground layer (slides up/down) */}
             <Animated.View style={[
-                styles.button,
-                size ? { width: size, height: size } : {},
-                animatedStyle
+                styles.front,
+                {
+                    width: buttonSize,
+                    height: buttonSize,
+                    borderRadius: buttonSize * 0.15,
+                    transform: [{ translateY: frontTranslateY }],
+                }
             ]}>
                 <Text style={[styles.text, { fontSize: dynamicFontSize }]}>{letter}</Text>
             </Animated.View>
@@ -72,23 +69,28 @@ export default function LetterButton({ letter, onPress, size }) {
 }
 
 const styles = StyleSheet.create({
-    button: {
-        width: 80,
-        height: 80,
+    wrapper: {
+        margin: 8,
+        position: 'relative',
+    },
+    edge: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        backgroundColor: '#000000', // Black edge
+        borderWidth: 0,
+    },
+    front: {
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff', // White face
         borderWidth: 2,
-        borderColor: '#000',
-        borderRadius: 10,
-        margin: 10,
-        shadowColor: '#000',
-        shadowRadius: 1,
+        borderColor: '#000000',
     },
     text: {
-        fontSize: 32,
         fontWeight: 'bold',
         color: '#000',
         fontFamily: 'Inter_700Bold',
+        userSelect: 'none',
     },
 });

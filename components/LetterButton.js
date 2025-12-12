@@ -5,20 +5,20 @@ export default function LetterButton({ letter, onPress, size }) {
     const animatedValue = useRef(new Animated.Value(0)).current;
 
     const handlePressIn = () => {
-        Animated.spring(animatedValue, {
+        animatedValue.stopAnimation();
+        Animated.timing(animatedValue, {
             toValue: 1,
+            duration: 60,
             useNativeDriver: true,
-            speed: 50,
-            bounciness: 4,
         }).start();
     };
 
     const handlePressOut = () => {
-        Animated.spring(animatedValue, {
+        animatedValue.stopAnimation();
+        Animated.timing(animatedValue, {
             toValue: 0,
+            duration: 100,
             useNativeDriver: true,
-            speed: 50,
-            bounciness: 4,
         }).start();
     };
 
@@ -27,27 +27,27 @@ export default function LetterButton({ letter, onPress, size }) {
             {
                 translateY: animatedValue.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 2],
+                    outputRange: [0, 5], // Push down into the surface
                 }),
             },
         ],
         shadowOffset: {
             width: animatedValue.interpolate({
                 inputRange: [0, 1],
-                outputRange: [2, 0],
+                outputRange: [3, 0], // Shadow disappears as button sinks
             }),
             height: animatedValue.interpolate({
                 inputRange: [0, 1],
-                outputRange: [3, 1],
+                outputRange: [6, 1], // Shadow flattens when pressed
             }),
         },
         shadowOpacity: animatedValue.interpolate({
             inputRange: [0, 1],
-            outputRange: [0.25, 0.1],
+            outputRange: [0.4, 0.15], // Shadow fades as button sinks
         }),
         elevation: animatedValue.interpolate({
             inputRange: [0, 1],
-            outputRange: [4, 1],
+            outputRange: [8, 2], // Elevation drops when pressed
         }),
     };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Text, PanResponder, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Speech from 'expo-speech';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
@@ -28,6 +29,35 @@ export default function App() {
     playWord: false,
     enabledLetters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').reduce((acc, char) => ({ ...acc, [char]: true }), {}),
   });
+
+  const SETTINGS_KEY = 'phonics_settings_v1';
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const storedSettings = await AsyncStorage.getItem(SETTINGS_KEY);
+        if (storedSettings) {
+          const parsedSettings = JSON.parse(storedSettings);
+          setSettings(prev => ({
+            ...prev,
+            ...parsedSettings,
+            // Merge enabledLetters carefully if needed, but simple spread should work if structure is same
+          }));
+        }
+      } catch (e) {
+        console.error('Failed to load settings', e);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const saveSettings = async (newSettings) => {
+    try {
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+    } catch (e) {
+      console.error('Failed to save settings', e);
+    }
+  };
 
   const touchStartTime = useRef(null);
   const touchCount = useRef(0);
@@ -161,7 +191,11 @@ export default function App() {
   };
 
   const handleUpdateSettings = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings(prev => {
+      const newSettings = { ...prev, [key]: value };
+      saveSettings(newSettings);
+      return newSettings;
+    });
   };
 
   if (!fontsLoaded) {
@@ -171,7 +205,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container} onLayout={onLayoutRootView}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.topSection}>
+      <View style={styles.topSection} {...panResponder.panHandlers}>
         <LetterDisplay
           letter={selectedLetter}
           showStandard={settings.showStandard}
@@ -180,7 +214,7 @@ export default function App() {
           showLowercase={settings.showLowercase}
         />
       </View>
-      <View style={styles.bottomSection} {...panResponder.panHandlers}>
+      <View style={styles.bottomSection}>
         <SoundBoard
           onLetterPress={handleLetterPress}
           enabledLetters={settings.enabledLetters}

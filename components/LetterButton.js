@@ -1,11 +1,66 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { Pressable, Text, StyleSheet, Animated } from 'react-native';
 
 export default function LetterButton({ letter, onPress }) {
+    const animatedValue = useRef(new Animated.Value(0)).current;
+
+    const handlePressIn = () => {
+        Animated.spring(animatedValue, {
+            toValue: 1,
+            useNativeDriver: true,
+            speed: 50,
+            bounciness: 4,
+        }).start();
+    };
+
+    const handlePressOut = () => {
+        Animated.spring(animatedValue, {
+            toValue: 0,
+            useNativeDriver: true,
+            speed: 50,
+            bounciness: 4,
+        }).start();
+    };
+
+    const animatedStyle = {
+        transform: [
+            {
+                translateY: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 2],
+                }),
+            },
+        ],
+        shadowOffset: {
+            width: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [2, 0],
+            }),
+            height: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [3, 1],
+            }),
+        },
+        shadowOpacity: animatedValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0.25, 0.1],
+        }),
+        elevation: animatedValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: [4, 1],
+        }),
+    };
+
     return (
-        <TouchableOpacity style={styles.button} onPress={onPress}>
-            <Text style={styles.text}>{letter}</Text>
-        </TouchableOpacity>
+        <Pressable
+            onPress={onPress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+        >
+            <Animated.View style={[styles.button, animatedStyle]}>
+                <Text style={styles.text}>{letter}</Text>
+            </Animated.View>
+        </Pressable>
     );
 }
 
@@ -20,11 +75,8 @@ const styles = StyleSheet.create({
         borderColor: '#000',
         borderRadius: 10,
         margin: 10,
-        elevation: 2, // Android shadow
-        shadowColor: '#000', // iOS shadow
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
+        shadowColor: '#000',
+        shadowRadius: 1,
     },
     text: {
         fontSize: 32,

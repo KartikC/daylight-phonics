@@ -101,27 +101,26 @@ export default function App() {
   const playPhonicsSound = async (char) => {
     const soundFile = soundAssets[char];
     if (soundFile) {
-      return new Promise(async (resolve) => {
+      // Stop and unload any currently playing sound immediately
+      if (sound) {
         try {
-          const { sound } = await Audio.Sound.createAsync(soundFile);
-          setSound(sound);
-
-          sound.setOnPlaybackStatusUpdate((status) => {
-            if (status.didJustFinish) {
-              sound.unloadAsync();
-              resolve();
-            }
-          });
-
-          await sound.playAsync();
-        } catch (error) {
-          console.error("Error playing sound", error);
-          resolve(); // Resolve anyway to continue sequence
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (e) {
+          // Ignore errors if already unloaded
         }
-      });
+      }
+
+      try {
+        const { sound: newSound } = await Audio.Sound.createAsync(soundFile);
+        setSound(newSound);
+        await newSound.playAsync();
+      } catch (error) {
+        console.error("Error playing sound", error);
+      }
     }
-    return Promise.resolve();
   };
+
 
   const speakText = (text) => {
     return new Promise((resolve) => {

@@ -1,45 +1,21 @@
-import React, { useRef } from 'react';
-import { Pressable, Text, StyleSheet, Animated, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, Text, StyleSheet, View } from 'react-native';
 
 export default function LetterButton({ letter, onPress, size }) {
-    const animatedValue = useRef(new Animated.Value(0)).current;
-
-    const handlePressIn = () => {
-        animatedValue.stopAnimation();
-        Animated.timing(animatedValue, {
-            toValue: 1,
-            duration: 50,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const handlePressOut = () => {
-        animatedValue.stopAnimation();
-        Animated.timing(animatedValue, {
-            toValue: 0,
-            duration: 80,
-            useNativeDriver: true,
-        }).start();
-    };
+    const [isPressed, setIsPressed] = useState(false);
 
     // Button dimensions
     const buttonSize = size || 80;
     const edgeOffset = 6; // How much the front layer floats above the back
     const pressedOffset = 2; // Keep small gap when pressed for 3D effect
 
-    // Animated translateY for the front layer
-    const frontTranslateY = animatedValue.interpolate({
-        inputRange: [0, 1],
-        outputRange: [-edgeOffset, -pressedOffset],
-    });
-
     const dynamicFontSize = buttonSize * 0.4;
 
     return (
         <Pressable
             onPress={onPress}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={() => setIsPressed(true)}
+            onPressOut={() => setIsPressed(false)}
             style={styles.wrapper}
         >
             {/* Background layer (stationary "edge" of button) */}
@@ -53,17 +29,17 @@ export default function LetterButton({ letter, onPress, size }) {
             ]} />
 
             {/* Foreground layer (slides up/down) */}
-            <Animated.View style={[
+            <View style={[
                 styles.front,
                 {
                     width: buttonSize,
                     height: buttonSize,
                     borderRadius: buttonSize * 0.15,
-                    transform: [{ translateY: frontTranslateY }],
+                    transform: [{ translateY: isPressed ? -pressedOffset : -edgeOffset }],
                 }
             ]}>
                 <Text style={[styles.text, { fontSize: dynamicFontSize }]}>{letter}</Text>
-            </Animated.View>
+            </View>
         </Pressable>
     );
 }
@@ -86,6 +62,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff', // White face
         borderWidth: 2,
         borderColor: '#000000',
+        transitionProperty: 'transform',
+        transitionDuration: '100ms',
     },
     text: {
         fontWeight: 'bold',

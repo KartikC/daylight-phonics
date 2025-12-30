@@ -17,48 +17,19 @@ export default function SoundBoard({ onLetterPress, enabledLetters }) {
 
         const { width, height } = layout;
         const count = visibleLetters.length;
-        const margin = 20; // 10 on each side
+        const margin = 16; // Total margin per button (8 on each side)
+        const padding = 20; // Container padding
+        const minSize = 80;
+        const maxSize = 120;
 
-        let bestSize = 80;
-        let low = 60;
-        let high = 300; // Max reasonable size
+        // Calculate how many columns we can fit
+        const cols = Math.max(1, Math.floor((width - padding) / (minSize + margin)));
 
-        // Binary search for largest square size that allows fitting all items
-        while (low <= high) {
-            const mid = Math.floor((low + high) / 2);
-            const sizeWithMargin = mid + margin;
+        // Calculate optimal size to fill width
+        const optimalSize = Math.floor((width - padding) / cols - margin);
 
-            // Available columns
-            const cols = Math.floor((width - 20) / sizeWithMargin); // -20 for container padding
-            if (cols <= 0) {
-                high = mid - 1;
-                continue;
-            }
-
-            const rows = Math.ceil(count / cols);
-            const totalHeight = rows * sizeWithMargin + 40; // +40 for vertical padding
-
-            // We prefer to fit within height, but if it's impossible (too many items), 
-            // we default to scrolling with a minimum reasonable size.
-            // However, constraint says "somewhat scale to fill".
-
-            // Logic: If it fits, try bigger.
-            // If it doesn't fit, try smaller.
-
-            if (totalHeight <= height) {
-                bestSize = mid;
-                low = mid + 1;
-            } else {
-                high = mid - 1;
-            }
-        }
-
-        // If bestSize is still small (e.g. 60) because we have many items, 
-        // we might just want to stick to a readable standard size (80) and scroll.
-        // But if we have few items, we definitely want to scale up.
-        // If we have 26 items and they don't fit in view, bestSize might settle on < 60.
-        // We should clamp min size.
-        return Math.max(bestSize, 80);
+        // Clamp between min and max
+        return Math.min(Math.max(optimalSize, minSize), maxSize);
     }, [layout, visibleLetters]);
 
     return (

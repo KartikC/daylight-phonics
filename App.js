@@ -16,6 +16,8 @@ import soundAssets from './data/soundAssets';
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
+const DEFAULT_ENABLED_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').reduce((acc, char) => ({ ...acc, [char]: true }), {});
+
 export default function App() {
   const [selectedLetter, setSelectedLetter] = useState(null);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -27,7 +29,7 @@ export default function App() {
     playPhonics: true,
     playLetterName: false,
     playWord: false,
-    enabledLetters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').reduce((acc, char) => ({ ...acc, [char]: true }), {}),
+    enabledLetters: DEFAULT_ENABLED_LETTERS,
   });
 
   const SETTINGS_KEY = 'phonics_settings_v1';
@@ -61,7 +63,7 @@ export default function App() {
 
   const touchStartTime = useRef(null);
   const touchCount = useRef(0);
-  const [sound, setSound] = useState();
+  const activeSounds = useRef([]);
 
   let [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -115,13 +117,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    return sound
-      ? () => {
-        console.log('Unloading Sound');
-        sound.unloadAsync();
-      }
-      : undefined;
-  }, [sound]);
+    // Cleanup all active sounds on unmount
+    return () => {
+      activeSounds.current.forEach(sound => {
+        sound.unloadAsync().catch(() => {});
+      });
+      activeSounds.current = [];
+    };
+  }, []);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -132,19 +135,18 @@ export default function App() {
   const playPhonicsSound = async (char) => {
     const soundFile = soundAssets[char];
     if (soundFile) {
-      // Stop and unload any currently playing sound immediately
-      if (sound) {
-        try {
-          await sound.stopAsync();
-          await sound.unloadAsync();
-        } catch (e) {
-          // Ignore errors if already unloaded
-        }
-      }
-
       try {
         const { sound: newSound } = await Audio.Sound.createAsync(soundFile);
-        setSound(newSound);
+        activeSounds.current.push(newSound);
+
+        // Auto-cleanup when sound finishes playing
+        newSound.setOnPlaybackStatusUpdate((status) => {
+          if (status.didJustFinish) {
+            newSound.unloadAsync().catch(() => {});
+            activeSounds.current = activeSounds.current.filter(s => s !== newSound);
+          }
+        });
+
         await newSound.playAsync();
       } catch (error) {
         console.error("Error playing sound", error);
@@ -234,14 +236,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    userSelect: 'none',
   },
   topSection: {
     flex: 1, // Takes up roughly 25-30% of screen depending on content
     minHeight: 200,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    userSelect: 'none',
   },
   bottomSection: {
     flex: 3,
+    userSelect: 'none',
   },
 });

@@ -23,7 +23,7 @@ export default function HomeScreen() {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [settings, setSettings] = useState({
     showStandard: true,
-    showCursive: true,
+    showCursive: false,
     showUppercase: true,
     showLowercase: true,
     playPhonics: true,

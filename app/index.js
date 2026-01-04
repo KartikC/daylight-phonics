@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, PanResponder, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Speech from 'expo-speech';
 
+// Retro components (default)
+import RetroLetterDisplay from '../components/retro/RetroLetterDisplay';
+import RetroSoundBoard from '../components/retro/RetroSoundBoard';
+import RetroSettingsModal from '../components/retro/RetroSettingsModal';
+
+// Minimal components
 import LetterDisplay from '../components/LetterDisplay';
 import SoundBoard from '../components/SoundBoard';
 import SettingsModal from '../components/SettingsModal';
@@ -24,9 +30,10 @@ export default function HomeScreen() {
     playLetterName: false,
     playWord: false,
     enabledLetters: DEFAULT_ENABLED_LETTERS,
+    useMinimalStyle: false, // false = retro (default), true = minimal
   });
 
-  const SETTINGS_KEY = 'phonics_settings_v1';
+  const SETTINGS_KEY = 'phonics_settings_v2';
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -55,8 +62,6 @@ export default function HomeScreen() {
   };
 
   const activeSounds = useRef([]);
-
-  // PanResponder for 3 or 4-finger hold gesture (2 seconds)
   const timerRef = useRef(null);
 
   const handleTouchChange = (evt) => {
@@ -118,7 +123,6 @@ export default function HomeScreen() {
         const { sound: newSound } = await Audio.Sound.createAsync(soundFile);
         activeSounds.current.push(newSound);
 
-        // Auto-cleanup when sound finishes playing
         newSound.setOnPlaybackStatusUpdate((status) => {
           if (status.didJustFinish) {
             newSound.unloadAsync().catch(() => {});
@@ -170,11 +174,18 @@ export default function HomeScreen() {
     });
   };
 
+  const isMinimal = settings.useMinimalStyle;
+
+  // Choose components based on style
+  const CurrentLetterDisplay = isMinimal ? LetterDisplay : RetroLetterDisplay;
+  const CurrentSoundBoard = isMinimal ? SoundBoard : RetroSoundBoard;
+  const CurrentSettingsModal = isMinimal ? SettingsModal : RetroSettingsModal;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.topSection} {...panResponder.panHandlers}>
-        <LetterDisplay
+    <SafeAreaView style={isMinimal ? styles.containerMinimal : styles.containerRetro}>
+      <StatusBar barStyle="dark-content" backgroundColor={isMinimal ? '#fff' : '#E8D4B8'} />
+      <View style={isMinimal ? styles.topSectionMinimal : styles.topSectionRetro} {...panResponder.panHandlers}>
+        <CurrentLetterDisplay
           letter={selectedLetter}
           showStandard={settings.showStandard}
           showCursive={settings.showCursive}
@@ -183,12 +194,12 @@ export default function HomeScreen() {
         />
       </View>
       <View style={styles.bottomSection}>
-        <SoundBoard
+        <CurrentSoundBoard
           onLetterPress={handleLetterPress}
           enabledLetters={settings.enabledLetters}
         />
       </View>
-      <SettingsModal
+      <CurrentSettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
         settings={settings}
@@ -199,12 +210,22 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerRetro: {
+    flex: 1,
+    backgroundColor: '#E8D4B8',
+    userSelect: 'none',
+  },
+  containerMinimal: {
     flex: 1,
     backgroundColor: '#fff',
     userSelect: 'none',
   },
-  topSection: {
+  topSectionRetro: {
+    flex: 1,
+    minHeight: 180,
+    userSelect: 'none',
+  },
+  topSectionMinimal: {
     flex: 1,
     minHeight: 200,
     borderBottomWidth: 1,

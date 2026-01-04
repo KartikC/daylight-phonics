@@ -99,6 +99,19 @@ export default function RetroSettingsModal({ visible, onClose, settings, onUpdat
             </View>
 
             <View style={styles.divider} />
+            <Text style={styles.sectionHeader}>APPEARANCE</Text>
+
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Minimal Style</Text>
+              <Switch
+                trackColor={{ false: "#5D2E0C", true: "#43A047" }}
+                thumbColor={settings.useMinimalStyle ? "#FDD835" : "#8B4513"}
+                onValueChange={() => onUpdateSettings('useMinimalStyle', !settings.useMinimalStyle)}
+                value={settings.useMinimalStyle}
+              />
+            </View>
+
+            <View style={styles.divider} />
             <Text style={styles.sectionHeader}>VISIBLE LETTERS</Text>
             <View style={styles.grid}>
               {ALPHABET_DATA.map((item, index) => (

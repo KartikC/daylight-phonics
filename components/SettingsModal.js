@@ -95,6 +95,19 @@ export default function SettingsModal({ visible, onClose, settings, onUpdateSett
                         </View>
 
                         <View style={styles.divider} />
+                        <Text style={styles.sectionHeader}>Appearance</Text>
+
+                        <View style={styles.settingRow}>
+                            <Text style={styles.settingLabel}>Minimal Style</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={settings.useMinimalStyle ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={() => onUpdateSettings('useMinimalStyle', !settings.useMinimalStyle)}
+                                value={settings.useMinimalStyle}
+                            />
+                        </View>
+
+                        <View style={styles.divider} />
                         <Text style={styles.sectionHeader}>Visible Letters</Text>
                         <View style={styles.grid}>
                             {ALPHABET_DATA.map(item => (

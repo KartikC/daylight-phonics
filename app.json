@@ -3,6 +3,7 @@
     "name": "phonics-soundboard",
     "slug": "phonics-soundboard",
     "version": "1.0.0",
+    "scheme": "phonics-soundboard",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,10 +24,12 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-router"
     ]
   }
 }

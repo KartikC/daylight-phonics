@@ -59,6 +59,10 @@ phonics-soundboard/
 - Custom phonics audio files
 - Additional phonics exercises
 
+## Attributions
+
+- Phonics sounds by [bblodget/Letter_Sounds](https://github.com/bblodget/Letter_Sounds)
+
 ## License
 
 MIT

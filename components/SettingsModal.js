@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, Switch, StyleSheet, TouchableOpacity, ScrollView, Pressable } from 'react-native';
+import { Modal, View, Text, Switch, StyleSheet, TouchableOpacity, ScrollView, Pressable, Linking } from 'react-native';
 import { ALPHABET_DATA } from '../data/alphabet';
 
 export default function SettingsModal({ visible, onClose, settings, onUpdateSettings }) {
@@ -127,6 +127,17 @@ export default function SettingsModal({ visible, onClose, settings, onUpdateSett
                             ))}
                         </View>
 
+                        <View style={styles.attributionContainer}>
+                            <Text style={styles.attributionText}>
+                                sounds by{' '}
+                                <Text
+                                    style={styles.linkText}
+                                    onPress={() => Linking.openURL('https://github.com/bblodget/Letter_Sounds?tab=readme-ov-file')}
+                                >
+                                    bblodget
+                                </Text>
+                            </Text>
+                        </View>
                     </ScrollView>
 
                     <TouchableOpacity
@@ -247,5 +258,19 @@ const styles = StyleSheet.create({
     },
     letterButtonTextActive: {
         color: '#fff',
+    },
+    attributionContainer: {
+        marginTop: 30,
+        marginBottom: 10,
+        alignItems: 'center',
+    },
+    attributionText: {
+        fontSize: 14,
+        color: '#666',
+        userSelect: 'none',
+    },
+    linkText: {
+        color: '#2196F3',
+        textDecorationLine: 'underline',
     },
 });
